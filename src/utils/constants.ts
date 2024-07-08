@@ -1,7 +1,7 @@
 export const BASE_URL:string = `${process.env.REACT_APP_BASE_URL}`
 
 export type HttpMethod = 'get' | 'post' | 'put' | 'delete' | 'patch';
-
+export type OptionType = 'chip' | 'drink' | 'chocolate';
 export interface RequestConfig {
     params?: any;
     data?: any;

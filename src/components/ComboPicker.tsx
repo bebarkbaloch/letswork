@@ -2,6 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '../store/store';
 import { selectChips, selectDrink, selectChocolate, resetCombo } from '../store/comboSlice';
+import { OptionType } from '../utils/constants';
+import CustomLabel from './CustomLabel';
+import CustomLoader from './CustomLoader';
 
 const ComboPicker: React.FC = () => {
     const dispatch = useDispatch<AppDispatch>();
@@ -11,8 +14,10 @@ const ComboPicker: React.FC = () => {
     const [uniqueChips, setUniqueChips] = useState<any[]>([]);
     const [uniqueDrinks, setUniqueDrinks] = useState<any[]>([]);
     const [uniqueChocolates, setUniqueChocolates] = useState<any[]>([]);
+    const [loader, setLoader] = useState<boolean>(true);
 
     useEffect(() => {
+
         fetch('/combos.json')
             .then((response) => {
                 if (!response.ok) {
@@ -24,112 +29,153 @@ const ComboPicker: React.FC = () => {
                 setCombos(data?.data)
 
                 setUniqueChips([...new Set(data?.data?.map((combo: any) => combo.chips))]) ;
-                // setUniqueDrinks([...new Set(data?.data?.filter((combo: any) => combo.chips === chips).map((combo: any) => combo.drink))]) ;
-                // setUniqueChocolates([...new Set(data?.data?.filter((combo: any) => combo.chips === chips && combo.drink === drink).map((combo: any) => combo.chocolate))]);
 
             })
-            .catch((error) => console.error('Error fetching combos:', error));
+            .catch((error) => console.error('Error fetching combos:', error))
+            .finally(()=>{
+              setLoader(false)
+        });
     }, []);
 
 
-    // let uniqueChips = [...new Set(combos?.map((combo: any) => combo.chips))];
-    // let  uniqueDrinks = [...new Set(combos?.filter((combo: any) => combo.chips === chips).map((combo: any) => combo.drink))];
-    // let uniqueChocolates = [...new Set(combos?.filter((combo: any) => combo.chips === chips && combo.drink === drink).map((combo: any) => combo.chocolate))];
-
-
-    useEffect(() => {
-        // Update unique drinks when chips selection changes
-        if (selectedTab ==='chip') {
-            setUniqueChips([...new Set(combos?.map((combo: any) => combo.chips))]) ;
-            setUniqueDrinks([]);
-            setUniqueChocolates([]);
-        } else if (selectedTab ==='drink') {
-            setUniqueDrinks([...new Set(combos?.map((combo: any) => combo.drink))]) ;
-            setUniqueChocolates([]);
-            setUniqueChips([])
-        }else{
-            setUniqueChocolates([...new Set(combos?.map((combo: any) => combo.chocolate))]) ;
-            setUniqueChips([])
-            setUniqueDrinks([]);
-        }
-    }, [combos, selectedTab]);
 
     useEffect(() => {
         updateUniqueOptions();
-    }, [combos, chips, drink, chocolate, selectedTab]);
+    }, [combos, selectedTab]);
+
+    useEffect(() => {
+        handleDynamicOptions();
+    }, [ chips, drink, chocolate]);
 
     const updateUniqueOptions = () => {
-        let uniqueChipsList: string[] = [];
-        let uniqueDrinksList: string[] = [];
-        let uniqueChocolatesList: string[] = [];
 
         switch (selectedTab) {
             case 'chip':
-                uniqueChipsList = [...new Set(combos?.map((combo: any) => combo.chips))];
+                setUniqueChips([...new Set(combos?.map((combo: any) => combo.chips))]) ;
+                setUniqueDrinks([]);
+                setUniqueChocolates([]);
                 break;
             case 'drink':
-                uniqueDrinksList = [...new Set(combos?.filter((combo: any) => combo.chips === chips).map((combo: any) => combo.drink))];
+                setUniqueDrinks([...new Set(combos?.map((combo: any) => combo.drink))]) ;
+                setUniqueChocolates([]);
+                setUniqueChips([])
                 break;
             case 'chocolate':
-                uniqueChocolatesList = [...new Set(combos?.filter((combo: any) => combo.chips === chips && combo.drink === drink).map((combo: any) => combo.chocolate))];
+                setUniqueChocolates([...new Set(combos?.map((combo: any) => combo.chocolate))]) ;
+                setUniqueChips([])
+                setUniqueDrinks([]);
                 break;
             default:
                 break;
         }
-
-        setUniqueChips(uniqueChipsList);
-        setUniqueDrinks(uniqueDrinksList);
-        setUniqueChocolates(uniqueChocolatesList);
     };
 
+    const updateOptionChange = (type:string) => {
+
+        switch (selectedTab) {
+            case 'chip':
+                if(type === 'chip' ){
+                    dispatch(selectDrink(null));
+                    dispatch(selectChocolate(null));
+                }
+
+                if(type === 'drink'){
+                    dispatch(selectChocolate(null));
+                }
+
+                break;
+            case 'drink':
+                if(type === 'drink' ){
+                    dispatch(selectChips(null));
+                    dispatch(selectChocolate(null));
+                }
+
+                if(type === 'chip'){
+                    dispatch(selectChocolate(null));
+                }
+                break;
+            case 'chocolate':
+                if(type === 'chocolate' ){
+                    dispatch(selectChips(null));
+                    dispatch(selectDrink(null));
+                }
+
+                if(type === 'chip'){
+                    dispatch(selectDrink(null));
+                }
 
 
-    const handleChipsChange = (chip: string) => {
-        dispatch(selectChips(chip));
-        dispatch(selectDrink(null));
-        dispatch(selectChocolate(null));
+                break;
+            default:
+                break;
+        }
     };
 
-    const handleDrinkChange = (drink: string) => {
-        dispatch(selectDrink(drink));
-        dispatch(selectChocolate(null));
+    const handleDynamicOptions = () => {
+
+        switch (selectedTab) {
+            case 'chip':
+                if(chips){
+                    setUniqueDrinks([...new Set(combos?.filter((combo: any) => combo.chips === chips).map((combo: any) => combo.drink))]) ;
+                    setUniqueChocolates([])
+                }
+                if(chips && drink){
+                    setUniqueChocolates([...new Set(combos?.filter((combo: any) => combo.chips === chips && combo.drink === drink).map((combo: any) => combo.chocolate))]) ;
+                }
+                break;
+            case 'drink':
+                if(drink){
+                    setUniqueChips([...new Set(combos?.filter((combo: any) => combo.drink === drink).map((combo: any) => combo.chips))]) ;
+                    setUniqueChocolates([])
+                }
+                if(chips && drink){
+                    setUniqueChocolates([...new Set(combos?.filter((combo: any) => combo.chips === chips && combo.drink === drink).map((combo: any) => combo.chocolate))]) ;
+                }
+                break;
+            case 'chocolate':
+                if(chocolate){
+                    setUniqueChips([...new Set(combos?.filter((combo: any) => combo.chocolate === chocolate).map((combo: any) => combo.chips))]) ;
+                    setUniqueDrinks([])
+                }
+                if(chips && chocolate){
+                    setUniqueDrinks([...new Set(combos?.filter((combo: any) => combo.chips === chips && combo.chocolate === chocolate).map((combo: any) => combo.drink))]) ;
+                }
+                break;
+            default:
+                break;
+        }
     };
 
-    const handleChocolateChange = (chocolate: string) => {
-        dispatch(selectChocolate(chocolate));
+    const handleOptionChange = (type: OptionType, value: string) => {
+        switch (type) {
+            case 'chip':
+                dispatch(selectChips(value));
+                break;
+            case 'drink':
+                dispatch(selectDrink(value));
+                break;
+            case 'chocolate':
+                dispatch(selectChocolate(value));
+                break;
+        }
+        updateOptionChange(type);
     };
 
     const handleTabClick = (tab: 'chip' | 'drink' | 'chocolate') => {
+        setSelectedTab(tab)
         if (tab === 'chip') {
             dispatch(selectChips(null));
             dispatch(selectDrink(null));
             dispatch(selectChocolate(null));
-            setSelectedTab('chip')
-
-            // setUniqueChips([...new Set(combos?.map((combo: any) => combo.chips))]) ;
-            // setUniqueDrinks( [...new Set(combos?.filter((combo: any) => combo.chips === chips).map((combo: any) => combo.drink))]);
-            // setUniqueChocolates( [...new Set(combos?.filter((combo: any) => combo.chips === chips && combo.drink === drink).map((combo: any) => combo.chocolate))]);
-
         } else if (tab === 'drink') {
             dispatch(selectChips(null));
             dispatch(selectDrink(null));
             dispatch(selectChocolate(null));
-            setSelectedTab('drink')
-
-            // setUniqueDrinks([...new Set(combos?.map((combo: any) => combo.drink))]);
-            // setUniqueChips( [...new Set(combos?.filter((combo: any) => combo.drink === drink).map((combo: any) => combo.chips))]);
-            // setUniqueChocolates( [...new Set(combos?.filter((combo: any) => combo.chips === chips && combo.drink === drink).map((combo: any) => combo.chocolate))]);
 
         } else if (tab === 'chocolate') {
             dispatch(selectChips(null));
             dispatch(selectDrink(null));
             dispatch(selectChocolate(null));
-            setSelectedTab('chocolate')
-
-            // setUniqueChocolates([...new Set(combos?.map((combo: any) => combo.chocolate))]);
-            // setUniqueChips( [...new Set(combos?.filter((combo: any) => combo.chocolate === chocolate).map((combo: any) => combo.chips))]);
-            // setUniqueDrinks([...new Set(combos?.filter((combo: any) => combo.chips === chips && combo.chocolate === chocolate).map((combo: any) => combo.drink))]);
-
         }
     };
 
@@ -143,59 +189,28 @@ const ComboPicker: React.FC = () => {
                 <thead>
                 <tr className="tabs">
                     <th className={`tab ${selectedTab === 'chip' ? 'active' : ''}`} onClick={() => handleTabClick('chip')}>Chips</th>
-                    <th className={`tab ${selectedTab === 'drink' ? 'active' : ''}`} onClick={() => handleTabClick('drink')}>Drink</th>
-                    <th className={`tab ${selectedTab === 'chocolate' ? 'active' : ''}`} onClick={() => handleTabClick('chocolate')}>Chocolate</th>
+                    <th className={`tab ${selectedTab === 'drink' ? 'active' : ''}`} onClick={() => handleTabClick('drink')}>Drinks</th>
+                    <th className={`tab ${selectedTab === 'chocolate' ? 'active' : ''}`} onClick={() => handleTabClick('chocolate')}>Chocolates</th>
                 </tr>
                 </thead>
                 <tbody>
-                <tr>
-                    <td>
-                        {uniqueChips.map((chip, index) => (
-                            <div key={index} className={'custom_labels'}>
-                                <label>
-                                    <input
-                                        type="checkbox"
-                                        checked={chips === chip}
-                                        onChange={() => handleChipsChange(chip)}
-                                    />
-                                    {chip}
-                                </label>
-                            </div>
-                        ))}
-                    </td>
-                    <td>
-                        {uniqueDrinks.map((item, index) => (
-                            <div key={index} className={'custom_labels'}>
-                                <label>
-                                    <input
-                                        type="checkbox"
-                                        checked={item === drink}
-                                        onChange={() => handleDrinkChange(item)}
-                                        // disabled={!chips} // Disable until chips is selected
-                                    />
-                                    {item}
-                                </label>
-                            </div>
-                        ))}
-                    </td>
-                    <td>
-                        {uniqueChocolates.map((choc, index) => (
-                            <div key={index} className={'custom_labels'}>
-                                <label>
-                                    <input
-                                        type="checkbox"
-                                        checked={chocolate === choc}
-                                        onChange={() => handleChocolateChange(choc)}
-                                        // disabled={!chips || !drink} // Disable until chips and drink are selected
-                                    />
-                                    {choc}
-                                </label>
-                            </div>
-                        ))}
-                    </td>
-                </tr>
+                {loader ? <CustomLoader/> :
+                    <tr>
+                        <td>
+                            <CustomLabel data={uniqueChips} handleOptionChange={handleOptionChange} type={'chip'} value={chips}/>
+                        </td>
+                        <td>
+                            <CustomLabel data={uniqueDrinks} handleOptionChange={handleOptionChange} type={'drink'} value={drink}/>
+                        </td>
+                        <td>
+                            <CustomLabel data={uniqueChocolates} handleOptionChange={handleOptionChange} type={'chocolate'} value={chocolate}/>
+                        </td>
+                    </tr>
+                }
+
                 </tbody>
             </table>
+
             {chips && drink && chocolate && (
                 <div className={'selected_combo'}>
                     <h2>Selected Combo</h2>
@@ -211,7 +226,7 @@ const ComboPicker: React.FC = () => {
                         </tr>
                         <tr>
                             <td>
-                               Drinks
+                                Drink
                             </td>
                             <td>
                                 {drink}
@@ -219,7 +234,7 @@ const ComboPicker: React.FC = () => {
                         </tr>
                         <tr>
                             <td>
-                                Chocolates
+                                Chocolate
                             </td>
                             <td>
                                 {chocolate}
@@ -227,7 +242,10 @@ const ComboPicker: React.FC = () => {
                         </tr>
                         </tbody>
                     </table>
-                    <button onClick={() => dispatch(resetCombo())}>Change Combo</button>
+                    <button onClick={() => {
+                        updateUniqueOptions()
+                        dispatch(resetCombo())
+                    }}>Change Combo</button>
                 </div>
             )}
         </div>

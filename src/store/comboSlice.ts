@@ -18,12 +18,12 @@ const comboSlice = createSlice({
     reducers: {
         selectChips: (state, action) => {
             state.chips = action.payload;
-            state.drink = null;
-            state.chocolate = null;
+            // state.drink = null;
+            // state.chocolate = null;
         },
         selectDrink: (state, action) => {
             state.drink = action.payload;
-            state.chocolate = null;
+            // state.chocolate = null;
         },
         selectChocolate: (state, action) => {
             state.chocolate = action.payload;

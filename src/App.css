@@ -126,3 +126,11 @@ th.tab.active {
     background-color: gainsboro;
     color: white;
 }
+
+.custom_laoder {
+    width: 100%;
+    height: 30vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
