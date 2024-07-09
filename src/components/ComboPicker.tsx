@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { RootState, AppDispatch } from '../store/store';
+import { RootState } from '../store/store';
 import { selectChips, selectDrink, selectChocolate, resetCombo } from '../store/comboSlice';
 import { OptionType } from '../utils/constants';
 import CustomLabel from './CustomLabel';
 import CustomLoader from './CustomLoader';
 
 const ComboPicker: React.FC = () => {
-    const dispatch = useDispatch<AppDispatch>();
+    const dispatch = useDispatch();
     const { chips, drink, chocolate } = useSelector((state: RootState) => state.combo);
     const [combos, setCombos] = useState([]);
     const [selectedTab, setSelectedTab] = useState('chip');
@@ -16,26 +16,25 @@ const ComboPicker: React.FC = () => {
     const [uniqueChocolates, setUniqueChocolates] = useState<any[]>([]);
     const [loader, setLoader] = useState<boolean>(true);
 
-    useEffect(() => {
 
-        fetch('/combos.json')
-            .then((response) => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then((data) => {
-                setCombos(data?.data)
 
-                setUniqueChips([...new Set(data?.data?.map((combo: any) => combo.chips))]) ;
+        useEffect(() => {
+            fetch('/combos.json')
+                .then((response) => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then((data) => {
+                    setCombos(data.data);
+                    setUniqueChips([...new Set(data.data.map((combo: any) => combo.chips))]);
+                    setLoader(false)
+                })
+                .catch((error) => console.log('Error fetching combos:', error))
 
-            })
-            .catch((error) => console.error('Error fetching combos:', error))
-            .finally(()=>{
-              setLoader(false)
-        });
-    }, []);
+        }, []);
+
 
 
 
@@ -194,7 +193,11 @@ const ComboPicker: React.FC = () => {
                 </tr>
                 </thead>
                 <tbody>
-                {loader ? <CustomLoader/> :
+                {loader ? <tr>
+                        <td colSpan={3}>
+                            <CustomLoader />
+                        </td>
+                    </tr>:
                     <tr>
                         <td>
                             <CustomLabel data={uniqueChips} handleOptionChange={handleOptionChange} type={'chip'} value={chips}/>
