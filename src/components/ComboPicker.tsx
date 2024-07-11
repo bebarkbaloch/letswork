@@ -5,6 +5,7 @@ import { selectChips, selectDrink, selectChocolate, resetCombo } from '../store/
 import { OptionType } from '../utils/constants';
 import CustomLabel from './CustomLabel';
 import CustomLoader from './CustomLoader';
+import data from '../assets/combos.json';
 
 const ComboPicker: React.FC = () => {
     const dispatch = useDispatch();
@@ -19,21 +20,51 @@ const ComboPicker: React.FC = () => {
 
 
         useEffect(() => {
-            fetch('/combos.json')
-                .then((response) => {
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! Status: ${response.status}`);
+            let ComboData:any = {
+                "data": [
+                    {
+                        "chips": "Lays Salted",
+                        "drink": "Pepsi",
+                        "chocolate": "Cadbury"
+                    },
+                    {
+                        "chips": "Slims",
+                        "drink": "7Up",
+                        "chocolate": "Perk"
+                    },
+                    {
+                        "chips": "Potato Sticks",
+                        "drink": "Pepsi",
+                        "chocolate": "Now"
+                    },
+                    {
+                        "chips": "Slanty",
+                        "drink": "Miranda",
+                        "chocolate": "Cadbury"
+                    },
+                    {
+                        "chips": "Slims",
+                        "drink": "Pepsi",
+                        "chocolate": "Perk"
                     }
-                    return response.json();
-                })
-                .then((data) => {
-                    setCombos(data.data);
-                    setUniqueChips([...new Set(data.data.map((combo: any) => combo.chips))]);
-                    setLoader(false)
-                })
-                .catch((error) => console.log('Error fetching combos:', error))
+                ]
+            }
 
-        }, []);
+            // fetch('/combos.json')
+            //     .then((response) => {
+            //         if (!response.ok) {
+            //             throw new Error(`HTTP error! Status: ${response.status}`);
+            //         }
+            //         return response.json();
+            //     })
+            //     .then((data) => {
+                    setCombos(ComboData.data);
+                    setUniqueChips([...new Set(ComboData.data.map((combo: any) => combo.chips))]);
+                    setLoader(false)
+                // })
+                // .catch((error) => console.log('Error fetching combos:', error))
+
+        }, [data]);
 
 
 
