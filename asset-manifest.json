@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/letswork/static/css/main.fb4de834.css",
+    "main.js": "/letswork/static/js/main.0e177b2c.js",
+    "static/js/453.c6a2df6c.chunk.js": "/letswork/static/js/453.c6a2df6c.chunk.js",
+    "index.html": "/letswork/index.html",
+    "main.fb4de834.css.map": "/letswork/static/css/main.fb4de834.css.map",
+    "main.0e177b2c.js.map": "/letswork/static/js/main.0e177b2c.js.map",
+    "453.c6a2df6c.chunk.js.map": "/letswork/static/js/453.c6a2df6c.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.fb4de834.css",
+    "static/js/main.0e177b2c.js"
+  ]
+}
