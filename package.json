@@ -2,7 +2,7 @@
   "name": "grocery-store",
   "version": "0.1.0",
   "private": true,
-  "homepage": "http://bebarkbaloch.github.io/bebarkbaloch.github.io",
+  "homepage": "http://bebarkbaloch.github.io/DynamicComboDeals",
   "dependencies": {
     "@reduxjs/toolkit": "^2.2.6",
     "@types/axios": "^0.14.0",
